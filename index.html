@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valorant 特工介绍</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: #0d1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #1a0a2e 50%, #0d1117 100%);
+      border-bottom: 2px solid #ff4655;
+      padding: 3rem 1.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: 50%; transform: translateX(-50%);
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,70,85,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #ff4655;
+      border: 1px solid #ff4655;
+      padding: 3px 12px;
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(36px, 8vw, 56px);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 10px;
+      letter-spacing: 3px;
+    }
+    .hero h1 span { color: #ff4655; }
+    .hero p {
+      color: rgba(255,255,255,0.45);
+      font-size: 14px;
+      margin-bottom: 1.8rem;
+    }
+
+    /* FILTER */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .filter-btn {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      padding: 7px 18px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { border-color: #ff4655; color: #ff4655; }
+    .filter-btn.active { background: #ff4655; border-color: #ff4655; color: #fff; }
+
+    /* COUNT BAR */
+    .count-bar {
+      text-align: center;
+      padding: 0.75rem;
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .count-bar span { color: #ff4655; font-weight: 600; }
+
+    /* GRID */
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      padding: 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* CARD */
+    .agent-card {
+      background: #12181f;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .agent-card:hover { transform: translateY(-4px); border-color: #ff4655; }
+
+    .agent-banner {
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      position: relative;
+    }
+    .banner-duelist   { background: linear-gradient(135deg, #2a0a0e, #1a0508); }
+    .banner-controller{ background: linear-gradient(135deg, #0a102a, #05081a); }
+    .banner-initiator { background: linear-gradient(135deg, #2a1e08, #1a1205); }
+    .banner-sentinel  { background: linear-gradient(135deg, #082a1a, #051a10); }
+
+    .role-tag {
+      position: absolute;
+      top: 8px; right: 8px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 2px 7px;
+      border-radius: 2px;
+    }
+    .role-duelist   { background: rgba(255,70,85,0.18);  color: #ff4655; }
+    .role-controller{ background: rgba(100,150,255,0.18); color: #6496ff; }
+    .role-initiator { background: rgba(255,180,50,0.18);  color: #ffb432; }
+    .role-sentinel  { background: rgba(50,220,130,0.18);  color: #32dc82; }
+
+    .agent-info { padding: 10px 13px 14px; }
+    .agent-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .agent-origin { font-size: 12px; color: rgba(255,255,255,0.38); margin-bottom: 8px; }
+    .agent-desc   { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.55; }
+
+    /* DETAIL OVERLAY */
+    .detail-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .detail-panel.open { display: flex; }
+
+    .detail-box {
+      background: #0d1117;
+      border: 1px solid #ff4655;
+      border-radius: 4px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #ff4655 #1a1a2e;
+    }
+
+    .detail-header {
+      padding: 1.4rem 1.4rem 1rem;
+      border-bottom: 1px solid rgba(255,70,85,0.25);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .detail-emoji { font-size: 46px; display: block; margin-bottom: 8px; }
+    .detail-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #fff;
+    }
+    .detail-meta { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+
+    .close-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.5);
+      font-size: 18px;
+      width: 34px; height: 34px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: monospace;
+      transition: all 0.2s;
+    }
+    .close-btn:hover { border-color: #ff4655; color: #ff4655; }
+
+    .detail-body { padding: 1.4rem; }
+    .detail-lore {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.75;
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .abilities-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      color: #ff4655;
+      margin-bottom: 12px;
+    }
+    .ability {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .ability-key {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255,70,85,0.12);
+      border: 1px solid rgba(255,70,85,0.35);
+      color: #ff4655;
+      padding: 3px 7px;
+      flex-shrink: 0;
+      min-width: 30px;
+      text-align: center;
+    }
+    .ability-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .ability-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.55; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      margin-top: 1rem;
+    }
+    footer span { color: #ff4655; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">PROTOCOL // AGENT DATABASE</div>
+  <h1>VALO<span>RANT</span> AGENTS</h1>
+  <p>29位特工 · 4种职业 · 选择你的战术风格</p>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filter(this,'all')">全部</button>
+    <button class="filter-btn" onclick="filter(this,'duelist')">决斗者</button>
+    <button class="filter-btn" onclick="filter(this,'controller')">控制者</button>
+    <button class="filter-btn" onclick="filter(this,'initiator')">前锋</button>
+    <button class="filter-btn" onclick="filter(this,'sentinel')">哨兵</button>
+  </div>
+</div>
+
+<div class="count-bar">显示 <span id="count">29</span> 位特工</div>
+<div class="agents-grid" id="grid"></div>
+
+<footer>
+  本站为粉丝制作，非官方内容。所有特工版权归 <span>Riot Games</span> 所有。
+</footer>
+
+<!-- DETAIL OVERLAY -->
+<div class="detail-panel" id="detail" onclick="closeDetail(event)">
+  <div class="detail-box">
+    <div class="detail-header">
+      <div>
+        <span class="detail-emoji" id="d-emoji"></span>
+        <div class="detail-name" id="d-name"></div>
+        <div class="detail-meta" id="d-meta"></div>
+      </div>
+      <button class="close-btn" onclick="closePanel()">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-lore" id="d-lore"></div>
+      <div class="abilities-title">// 技能列表</div>
+      <div id="d-abilities"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const agents = [
+  { name:'Jett', role:'duelist', origin:'韩国', emoji:'🌪️',
+    desc:'机动性极强的决斗者，风系能力让她如风般飘忽不定。',
+    lore:'Jett 是来自韩国的风系特工，凭借超凡的机动性和刀法在战场上如入无人之境。她我行我素、性格冲动，却拥有与生俱来的战斗本能。',
+    abilities:[
+      {key:'C',name:'云掩',desc:'投出即时烟雾弹遮蔽视野。'},
+      {key:'Q',name:'上升气流',desc:'瞬间向上腾空，获得制高点优势。'},
+      {key:'E',name:'顺风',desc:'签名技：向前冲刺或腾空悬停。'},
+      {key:'X',name:'刀雨',desc:'终极技：装备5把精准飞刀，击杀后重置刀数。'}
+    ]},
+  { name:'Reyna', role:'duelist', origin:'墨西哥', emoji:'👁️',
+    desc:'以击杀为食的吸血型决斗者，越战越勇。',
+    lore:'Reyna 是墨西哥的神秘特工，拥有吸取灵魂精华的能力。每次击杀都能让她恢复生命力或变得无敌，是自给自足的独狼型选手。',
+    abilities:[
+      {key:'C',name:'贪婪',desc:'消耗灵魂宝珠快速回复生命值。'},
+      {key:'Q',name:'解散',desc:'消耗灵魂宝珠短暂无敌并隐身。'},
+      {key:'E',name:'凝视',desc:'签名技：投出眼球，使直视的敌人短暂致盲。'},
+      {key:'X',name:'超载',desc:'终极技：强化所有能力，获得速度加成。'}
+    ]},
+  { name:'Phoenix', role:'duelist', origin:'英国', emoji:'🔥',
+    desc:'火焰系决斗者，自带治疗效果，可在标记处复活。',
+    lore:'Phoenix 来自英国，拥有控制火焰的超能力。站在火焰中反而能恢复生命，他的终极技能更能让他在死亡后瞬间复活，张扬而充满自信。',
+    abilities:[
+      {key:'C',name:'热掌',desc:'投出火球，落地形成火区造成伤害（Phoenix自愈）。'},
+      {key:'Q',name:'弯曲闪光',desc:'签名技：投出弯曲路线的闪光弹使敌人致盲。'},
+      {key:'E',name:'烈焰',desc:'绘制一道火墙阻挡视线并造成伤害。'},
+      {key:'X',name:'逃命去吧',desc:'终极技：在标记点复活，死亡后重生。'}
+    ]},
+  { name:'Raze', role:'duelist', origin:'巴西', emoji:'💣',
+    desc:'爆炸专家，用炸弹和火箭筒制造混乱。',
+    lore:'Raze 是来自巴西萨尔瓦多的爆炸物专家，对火药和机械有着天生的热情。她用爆炸物解决一切问题，在破坏中找到乐趣。',
+    abilities:[
+      {key:'C',name:'爆炸包',desc:'投出爆炸包，爆炸时对敌人造成大量伤害。'},
+      {key:'Q',name:'轰炸机器人',desc:'签名技：释放追踪爆炸机器人。'},
+      {key:'E',name:'爆破集束',desc:'投出集束手雷，分裂成多个小手雷。'},
+      {key:'X',name:'炸弹女皇',desc:'终极技：装备火箭筒，发射高爆火箭弹。'}
+    ]},
+  { name:'Neon', role:'duelist', origin:'菲律宾', emoji:'⚡',
+    desc:'电力女孩，速度最快的特工，闪电连射。',
+    lore:'Neon 是来自菲律宾的年轻特工，体内蕴含强大的生物电能，奔跑速度超乎常人，能在疾驰中精准射击。',
+    abilities:[
+      {key:'C',name:'快充',desc:'向前方投出两道电能屏障。'},
+      {key:'Q',name:'高速继续',desc:'签名技：向目标方向高速冲刺。'},
+      {key:'E',name:'继电器螺栓',desc:'快速发射电能螺栓使敌人致盲。'},
+      {key:'X',name:'过载',desc:'终极技：以极速奔跑，发射连续电流束。'}
+    ]},
+  { name:'Iso', role:'duelist', origin:'中国', emoji:'🎯',
+    desc:'来自中国的暗杀者，进入子弹维度单挑敌人。',
+    lore:'Iso 是来自中国的职业特工，性格冷静而致命。他能操控能量护盾并将敌人拉入独立维度进行一对一决斗。',
+    abilities:[
+      {key:'C',name:'底盘',desc:'对敌人击杀后激活，向前移动时生成护盾。'},
+      {key:'Q',name:'双重决斗',desc:'投出穿透型电能弹，击中敌人形成易碎球体。'},
+      {key:'E',name:'脉冲防护',desc:'签名技：充能后生成移动能量护盾。'},
+      {key:'X',name:'隔离',desc:'终极技：将自己和一名敌人传送至封闭维度决斗。'}
+    ]},
+  { name:'Waylay', role:'duelist', origin:'泰国', emoji:'🌊',
+    desc:'最新的速度型决斗者，操控光线令敌人头疼。',
+    lore:'Waylay 来自泰国，是2025年3月加入协议的最新特工。她能操控折射光线，在近距离战斗中如鬼魅般难以捕捉。',
+    abilities:[
+      {key:'C',name:'折射',desc:'在两个方向投出折射光线。'},
+      {key:'Q',name:'冲波',desc:'签名技：极速冲刺穿越敌人。'},
+      {key:'E',name:'闪光折射',desc:'投出折射光线弹，可以反弹使敌人致盲。'},
+      {key:'X',name:'顺流而下',desc:'终极技：持续产生高速，在地图上疾驰。'}
+    ]},
+  { name:'Brimstone', role:'controller', origin:'美国', emoji:'🛰️',
+    desc:'战场指挥官，从轨道发动烟雾和空袭。',
+    lore:'Brimstone 是美国老兵，凭借先进的轨道科技成为 VALORANT 协议的核心指挥官。经验丰富，是队友最可靠的支援。',
+    abilities:[
+      {key:'C',name:'轨道烟雾',desc:'通过平板电脑在地图上放置最多3个轨道烟雾。'},
+      {key:'Q',name:'燃烧弹',desc:'投出可弹跳的燃烧弹，焚烧落点区域。'},
+      {key:'E',name:'刺激信标',desc:'签名技：放置信标，附近友军获得射速加成。'},
+      {key:'X',name:'轨道轰炸',desc:'终极技：对目标区域发动持续轨道轰炸。'}
+    ]},
+  { name:'Omen', role:'controller', origin:'未知', emoji:'👤',
+    desc:'暗影幽灵，穿越阴影瞬移，令敌人恐惧。',
+    lore:'Omen 是一个失去记忆的神秘存在，只剩下黑暗与阴影。他不知道自己的过去，只知道如何操控黑暗。终极技能让他瞬移至地图任何角落。',
+    abilities:[
+      {key:'C',name:'偏执',desc:'短程传送，重新定位并欺骗敌人。'},
+      {key:'Q',name:'幽灵阶段',desc:'发射眼球穿越墙壁，使目标区域内所有敌人近视。'},
+      {key:'E',name:'暗影步',desc:'签名技：从阴影中召唤烟雾球。'},
+      {key:'X',name:'阴影之行',desc:'终极技：传送至地图上任意位置。'}
+    ]},
+  { name:'Viper', role:'controller', origin:'美国', emoji:'☠️',
+    desc:'毒素科学家，用有毒气体控制区域。',
+    lore:'Viper 是前科学家，她研发的毒素武器让她成为控制区域的顶尖专家。冷酷、聪明，以毒素来碾压敌人的意志。',
+    abilities:[
+      {key:'C',name:'毒烟',desc:'远程释放两个有毒气体发射器。'},
+      {key:'Q',name:'蛇击',desc:'向目标位置发射毒液球，溅开成毒液区。'},
+      {key:'E',name:'毒气屏障',desc:'签名技：部署一条由有毒气体形成的长线墙。'},
+      {key:'X',name:'蝰蛇之穴',desc:'终极技：释放巨大毒雾笼罩大片区域。'}
+    ]},
+  { name:'Astra', role:'controller', origin:'加纳', emoji:'🌌',
+    desc:'星空女神，在星界操控宇宙力量。',
+    lore:'Astra 来自加纳，能够进入星界操控宇宙能量。她在全局地图中放置星星，再从星界激活不同效果来控制整个战场。',
+    abilities:[
+      {key:'C',name:'新星脉冲',desc:'激活星星造成爆炸，使目标区域内敌人眩晕。'},
+      {key:'Q',name:'内爆',desc:'激活星星向内爆炸，将敌人拉向中心。'},
+      {key:'E',name:'星尘',desc:'签名技：在地图上放置最多5颗可激活的星星。'},
+      {key:'X',name:'宇宙分裂',desc:'终极技：在星界穿透全地图释放巨大星界之墙。'}
+    ]},
+  { name:'Harbor', role:'controller', origin:'印度', emoji:'🌊',
+    desc:'水系控制者，用古老神器操控水流。',
+    lore:'Harbor 来自印度，掌握着一件古老的水系神器。他用水墙和水雾来遮蔽视线、控制敌人的移动路线。',
+    abilities:[
+      {key:'C',name:'瀑降',desc:'向前掷出高压水柱形成弧形水帘。'},
+      {key:'Q',name:'洋流',desc:'召唤一道缓慢前进的水柱。'},
+      {key:'E',name:'海浪',desc:'签名技：向目标点发射水球，创造一大片遮蔽水雾。'},
+      {key:'X',name:'汹涌而来',desc:'终极技：召唤多道水浪对目标区域持续震动。'}
+    ]},
+  { name:'Clove', role:'controller', origin:'苏格兰', emoji:'💨',
+    desc:'永生控制者，死亡后仍能施放技能并可自我复活。',
+    lore:'Clove 来自苏格兰，是协议中唯一拥有自我复活能力的特工。性格活泼随性，对死亡毫不畏惧——因为死亡对他们来说不过是暂时的。',
+    abilities:[
+      {key:'C',name:'中断',desc:'投出可弹跳的毒物球，衰减目标区域内的敌人生命。'},
+      {key:'Q',name:'振作',desc:'死亡后激活：获得短暂速度提升并回复生命。'},
+      {key:'E',name:'诡计',desc:'签名技：放置烟雾，死亡后也可继续施放。'},
+      {key:'X',name:'死而复生',desc:'终极技：死亡后限时内复活，需获得击杀才能维持。'}
+    ]},
+  { name:'Sova', role:'initiator', origin:'俄罗斯', emoji:'🏹',
+    desc:'侦察弓箭手，用声呐箭揭露敌人位置。',
+    lore:'Sova 来自俄罗斯，从小在西伯利亚严酷环境中成长。他的机械弓和侦察无人机能够深入任何角落探明敌情，是团队的情报之眼。',
+    abilities:[
+      {key:'C',name:'震荡飞镖',desc:'发射可造成区域伤害和致盲的飞镖。'},
+      {key:'Q',name:'鹰眼无人机',desc:'签名技：控制侦察无人机探明敌情。'},
+      {key:'E',name:'声呐飞镖',desc:'发射可弹跳的声呐飞镖，持续探明敌人位置。'},
+      {key:'X',name:'猎人之怒',desc:'终极技：充能后发射3道穿墙的能量光束。'}
+    ]},
+  { name:'Breach', role:'initiator', origin:'瑞典', emoji:'💥',
+    desc:'机械臂巨人，穿透墙壁的震撼波能力。',
+    lore:'Breach 来自瑞典，双臂被机械义肢取代，这让他能够释放穿透固体表面的强力冲击波。团队强攻时不可或缺的关键特工。',
+    abilities:[
+      {key:'C',name:'余震',desc:'穿透墙壁引发小型爆炸，震晕区域内敌人。'},
+      {key:'Q',name:'闪光点',desc:'签名技：穿透墙壁的闪光，可弹跳。'},
+      {key:'E',name:'故障线路',desc:'穿透地表释放能量，震晕直线上的敌人。'},
+      {key:'X',name:'滚动雷霆',desc:'终极技：发射巨大冲击波，击飞并震晕目标区域敌人。'}
+    ]},
+  { name:'Skye', role:'initiator', origin:'澳大利亚', emoji:'🌿',
+    desc:'自然守护者，召唤动物伙伴探路和治愈。',
+    lore:'Skye 来自澳大利亚，与自然界有着深厚的连结。她能召唤凶猛的动物探路、追踪，也能治愈受伤的队友，是进攻与支援的完美结合。',
+    abilities:[
+      {key:'C',name:'引导射击',desc:'控制猎鹰穿越地图，使目标区域敌人致盲。'},
+      {key:'Q',name:'磁力踏步',desc:'召唤凶猛的野猪奔向目标，撞晕敌人。'},
+      {key:'E',name:'治愈之光',desc:'签名技：送出治愈能量球治疗队友。'},
+      {key:'X',name:'探寻者',desc:'终极技：释放3只追踪猎手追踪最近的敌人。'}
+    ]},
+  { name:'KAY/O', role:'initiator', origin:'未来', emoji:'🤖',
+    desc:'来自未来的机器人，可压制所有特工能力。',
+    lore:'KAY/O 是来自另一个时间线的战斗机器人，专门为摧毁辐射体而生。他独特的能力可以完全压制敌方特工的技能，让他们与普通人无异。',
+    abilities:[
+      {key:'C',name:'闪光/驱动',desc:'投出可弹跳的闪光弹使敌人致盲。'},
+      {key:'Q',name:'零点/切割',desc:'签名技：插入地面压制刀，抑制范围内所有敌人技能。'},
+      {key:'E',name:'碎片/蚀刻',desc:'投出爆炸碎片手雷，在小范围内持续爆炸。'},
+      {key:'X',name:'零/点',desc:'终极技：释放能量脉冲压制附近敌人，被击倒后可被队友救起。'}
+    ]},
+  { name:'Fade', role:'initiator', origin:'土耳其', emoji:'🌑',
+    desc:'梦魇猎手，用恐惧和黑暗追踪目标。',
+    lore:'Fade 来自土耳其，曾在噩梦中发现自己的力量。她能将他人最深处的恐惧召唤出来对付敌人，并通过梦魇生物进行精准追踪。',
+    abilities:[
+      {key:'C',name:'幽囚',desc:'投出爆炸噩梦球，使敌人近视并留下追踪标记。'},
+      {key:'Q',name:'纠缠',desc:'召唤噩梦实体追踪并抓住敌人。'},
+      {key:'E',name:'追猎',desc:'签名技：控制虚空猎手侦察敌人位置。'},
+      {key:'X',name:'夜袭',desc:'终极技：释放巨大梦魇之波，衰减并追踪所有敌人。'}
+    ]},
+  { name:'Gekko', role:'initiator', origin:'美国', emoji:'🦎',
+    desc:'养了一群奇怪小生物的特工，能种植炸弹。',
+    lore:'Gekko 来自美国洛杉矶，和他的一群辐射小生物是最好的伙伴。他的终极技能可以让他的伙伴 Thrash 替他种植炸弹，是进攻端的核心。',
+    abilities:[
+      {key:'C',name:'莫什坑',desc:'投出会弹跳的地衣，形成持续爆炸区域。'},
+      {key:'Q',name:'晕眩',desc:'签名技：释放 Dizzy 向前飞行，使直视的敌人致盲。'},
+      {key:'E',name:'翼人',desc:'控制 Wingman 前进，可以震晕敌人或独立种植/拆除炸弹。'},
+      {key:'X',name:'横冲直撞',desc:'终极技：控制 Thrash 追踪敌人，爆炸时拘留周围敌人。'}
+    ]},
+  { name:'Tejo', role:'initiator', origin:'哥伦比亚', emoji:'🚀',
+    desc:'退役情报顾问，使用弹道制导系统压制敌人。',
+    lore:'Tejo 是来自哥伦比亚的退役情报顾问，与 Brimstone 有共同的军事经历。他的弹道技术极为先进，是当前版本最强的前锋特工之一。',
+    abilities:[
+      {key:'C',name:'粘性炸弹',desc:'投出粘在物体表面的定时炸弹。'},
+      {key:'Q',name:'制导弹幕',desc:'签名技：发射可远程操控的多枚炸弹。'},
+      {key:'E',name:'刺探装置',desc:'发射侦察设备，持续揭示区域敌人位置。'},
+      {key:'X',name:'空中支援',desc:'终极技：对目标区域发动大规模导弹轰炸。'}
+    ]},
+  { name:'Sage', role:'sentinel', origin:'中国', emoji:'💚',
+    desc:'治愈者，可以复活队友，是团队的核心支柱。',
+    lore:'Sage 来自中国，是协议中最重要的支援特工。她能创造生命、治愈伤口，甚至让死去的队友重新站立，是每支队伍不可或缺的存在。',
+    abilities:[
+      {key:'C',name:'减速护球',desc:'投出护球，落地碎裂成减速区域。'},
+      {key:'Q',name:'治愈护球',desc:'签名技：治愈自己或队友的生命值。'},
+      {key:'E',name:'屏障护球',desc:'召唤坚固石墙，阻挡敌人通道。'},
+      {key:'X',name:'复苏',desc:'终极技：复活一名牺牲的队友。'}
+    ]},
+  { name:'Cypher', role:'sentinel', origin:'摩洛哥', emoji:'🕵️',
+    desc:'信息经纪人，用摄像机和陷阱监控整个地图。',
+    lore:'Cypher 来自摩洛哥，是一个以信息为生的神秘人物。他在地图上布满摄像机和陷阱，没有任何敌人的移动能逃过他的眼睛。',
+    abilities:[
+      {key:'C',name:'网状陷阱',desc:'放置绊线陷阱，触发时捆绑并透视敌人。'},
+      {key:'Q',name:'网球',desc:'投出致盲的球，使直视的敌人短暂失明。'},
+      {key:'E',name:'间谍摄像机',desc:'签名技：放置可远程查看的摄像机。'},
+      {key:'X',name:'神经窃取',desc:'终极技：对敌方尸体施放，揭示所有存活敌人位置。'}
+    ]},
+  { name:'Killjoy', role:'sentinel', origin:'德国', emoji:'🔧',
+    desc:'天才工程师，用机器人和炮塔守护阵地。',
+    lore:'Killjoy 是来自德国的年轻天才，拥有无与伦比的工程天赋。她部署的高科技装置能单独守住一个据点，让队友专注于其他战线。',
+    abilities:[
+      {key:'C',name:'蜂巢者',desc:'投出集群机器人，爆炸时衰减敌人生命值。'},
+      {key:'Q',name:'警报机器人',desc:'放置追踪机器人，发现并追击敌人使其易碎。'},
+      {key:'E',name:'炮台',desc:'签名技：部署自动炮塔攻击视野内敌人。'},
+      {key:'X',name:'闭锁装置',desc:'终极技：在广大区域内拘留所有敌人。'}
+    ]},
+  { name:'Chamber', role:'sentinel', origin:'法国', emoji:'🎩',
+    desc:'法式优雅的武器贩子，用定制武器猎杀敌人。',
+    lore:'Chamber 是来自法国的武器设计师，西装笔挺、品位一流。他用自己设计的专属武器在战场上展现优雅的杀戮艺术，并能随时传送脱身。',
+    abilities:[
+      {key:'C',name:'商标',desc:'放置锚点陷阱，触发后短暂减速附近敌人。'},
+      {key:'Q',name:'头号计划',desc:'签名技：装备重型定制手枪，可携带无限子弹。'},
+      {key:'E',name:'集合点',desc:'放置两个传送锚点，可在锚点间瞬移脱身。'},
+      {key:'X',name:'旅游景点',desc:'终极技：装备强力狙击步枪，击杀留下减速区。'}
+    ]},
+  { name:'Deadlock', role:'sentinel', origin:'挪威', emoji:'⛓️',
+    desc:'挪威战士，用纳米丝线封锁通道捕捉敌人。',
+    lore:'Deadlock 来自挪威，是一名久经沙场的特工。她的纳米线技术能完全封锁狭窄通道，并将敌人拉向她的陷阱，是防守端的恶梦。',
+    abilities:[
+      {key:'C',name:'屏障网格',desc:'发射弹跳型纳米线，形成屏障阻隔敌人通过。'},
+      {key:'Q',name:'声波传感器',desc:'签名技：放置震动传感器，探知附近敌人动静。'},
+      {key:'E',name:'引力井',desc:'投出抓取装置，将附近敌人拉向中心。'},
+      {key:'X',name:'无限绳结',desc:'终极技：发射纳米线将目标缠绕并拖向自身。'}
+    ]},
+  { name:'Vyse', role:'sentinel', origin:'未知', emoji:'🪙',
+    desc:'液态金属操控者，用金属荆棘封锁区域。',
+    lore:'Vyse 的身世神秘，曾被关押在孤岛 Abyss 上。她能操控液态金属，用荆棘藤蔓封锁敌人的移动，并在终极技能中剥夺敌人使用主武器的能力。',
+    abilities:[
+      {key:'C',name:'金属荆棘',desc:'放置隐形金属陷阱，触发时减速并持续伤害经过的敌人。'},
+      {key:'Q',name:'弧形玫瑰',desc:'发射液态金属装置，使目标近视。'},
+      {key:'E',name:'剪切',desc:'签名技：释放液态金属墙壁阻断通道。'},
+      {key:'X',name:'钢铁花园',desc:'终极技：释放大范围金属荆棘，使敌人8秒内无法使用主武器。'}
+    ]}
+];
+
+const roleMap = {
+  duelist:    {label:'决斗者', cls:'role-duelist',    banner:'banner-duelist'},
+  controller: {label:'控制者', cls:'role-controller',  banner:'banner-controller'},
+  initiator:  {label:'前锋',   cls:'role-initiator',   banner:'banner-initiator'},
+  sentinel:   {label:'哨兵',   cls:'role-sentinel',    banner:'banner-sentinel'}
+};
+
+let currentFilter = 'all';
+
+function render() {
+  const filtered = currentFilter === 'all' ? agents : agents.filter(a => a.role === currentFilter);
+  document.getElementById('count').textContent = filtered.length;
+  document.getElementById('grid').innerHTML = filtered.map(a => {
+    const r = roleMap[a.role];
+    const idx = agents.indexOf(a);
+    return `<div class="agent-card" onclick="openDetail(${idx})">
+      <div class="agent-banner ${r.banner}">
+        <span>${a.emoji}</span>
+        <span class="role-tag ${r.cls}">${r.label}</span>
+      </div>
+      <div class="agent-info">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-origin">${a.origin}</div>
+        <div class="agent-desc">${a.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filter(btn, role) {
+  currentFilter = role;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function openDetail(idx) {
+  const a = agents[idx];
+  const r = roleMap[a.role];
+  document.getElementById('d-emoji').textContent = a.emoji;
+  document.getElementById('d-name').textContent = a.name;
+  document.getElementById('d-meta').textContent = r.label + ' · ' + a.origin;
+  document.getElementById('d-lore').textContent = a.lore;
+  document.getElementById('d-abilities').innerHTML = a.abilities.map(ab =>
+    `<div class="ability">
+      <span class="ability-key">${ab.key}</span>
+      <div>
+        <span class="ability-name">${ab.name}</span>
+        <span class="ability-desc">${ab.desc}</span>
+      </div>
+    </div>`
+  ).join('');
+  document.getElementById('detail').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('detail').classList.remove('open');
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('detail')) closePanel();
+}
+
+render();
+</script>
+</body>
+</html>
